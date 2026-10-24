@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "dgram": "^1.0.1",
+    "pino": "^10.4.0",
+    "pino-pretty": "^13.2.0"
+  }
+}
