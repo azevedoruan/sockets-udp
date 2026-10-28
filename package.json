@@ -4,6 +4,10 @@
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },
+  "scripts": {
+    "server": "npx tsx server/main.ts",
+    "client": "npx tsx client/client.ts"
+  },
   "dependencies": {
     "dgram": "^1.0.1",
     "pino": "^10.4.0",
