@@ -43,7 +43,7 @@ const MENU = `
 ========================================
 Escolha uma opção: `;
 
-async function updateTerminal(client: Client): Promise<void> {
+export async function updateTerminal(client: Client): Promise<void> {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     let running = true;
     while(running) {
@@ -67,14 +67,3 @@ async function updateTerminal(client: Client): Promise<void> {
     rl.close();
     client.close();
 }
-
-async function main(): Promise<void> {
-    const client = new Client();
-    await client.startConnection(process.argv[2], '127.0.0.1', Number(process.argv[3]));
-    await updateTerminal(client);
-}
-
-main().catch((err) => {
-    console.error("Error:", err instanceof Error ? err.message : String(err));
-    process.exit(1);
-})

@@ -6,7 +6,7 @@
   },
   "scripts": {
     "server": "npx tsx server/main.ts",
-    "client": "npx tsx client/client.ts"
+    "client": "npx tsx client/main.ts"
   },
   "dependencies": {
     "dgram": "^1.0.1",
