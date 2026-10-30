@@ -1,9 +1,16 @@
 import * as udp from "dgram";
 import * as readline from "readline/promises";
 
+export type ClientDatas = {
+    nickname: string,
+    host: string,
+    port: number
+} | null;
+
 export class Client {
 
-    private udpClient: udp.Socket
+    private udpClient: udp.Socket;
+    private clientData: ClientDatas = null;
 
     public constructor() {
         this.udpClient = udp.createSocket('udp4');
@@ -13,6 +20,12 @@ export class Client {
         if (!nickname) throw new Error("Nickname é obrigatório.");
         if (!port) throw new Error("Port é obrigatório");
         
+        this.clientData = {
+            nickname,
+            host,
+            port
+        };
+
         return new Promise<void>((resolve, reject) => {
             this.udpClient.once('listening', () => {
                 console.log(`Client ${nickname} Running on port ${port}`);
@@ -31,6 +44,13 @@ export class Client {
     public close(): void {
         this.udpClient?.close();
     }
+
+    public async sendDefault(msg: string): Promise<void> {
+        this.udpClient.send(msg, this.clientData?.port, this.clientData?.host, (err, len) => {
+            if (err) console.log('ERROR: ', err);
+            console.log('sent lenght ', len);
+        })
+    }
 }
 
 const MENU = `
@@ -47,10 +67,14 @@ export async function updateTerminal(client: Client): Promise<void> {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     let running = true;
     while(running) {
-        const message = (await rl.question(MENU)).trim();
-        switch(message) {
+        const msgType = (await rl.question(MENU)).trim();
+        switch(msgType) {
             case "1": {
-                console.log("Selecionado DEFAULT");
+                const message = (await rl.question("> ")).trim();
+                if (!message)
+                    break;
+
+                await client.sendDefault(message);
                 break;
             }
             case "0": {
