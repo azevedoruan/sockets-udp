@@ -1,16 +1,11 @@
 import * as udp from "dgram";
 import * as readline from "readline/promises";
-
-export type ClientDatas = {
-    nickname: string,
-    host: string,
-    port: number
-} | null;
+import { ClientDatas, encode, Datagram, MessageType, decode } from "../protocol/protocol";
 
 export class Client {
 
+    data: ClientDatas = null;
     private udpClient: udp.Socket;
-    private clientData: ClientDatas = null;
 
     public constructor() {
         this.udpClient = udp.createSocket('udp4');
@@ -20,7 +15,7 @@ export class Client {
         if (!nickname) throw new Error("Nickname é obrigatório.");
         if (!port) throw new Error("Port é obrigatório");
         
-        this.clientData = {
+        this.data = {
             nickname,
             host,
             port
@@ -33,7 +28,13 @@ export class Client {
             });
 
             this.udpClient.on('message', (msgStream, rinfo) => {
-                console.log(`Message Received: ${msgStream.toString()}`);
+                const decoded = decode(msgStream, rinfo);
+                if (!decoded)
+                    return;
+
+                const { clientDatas, dgram } = decoded;
+
+                console.log(`[${MessageType[dgram.messageType]}] ${clientDatas?.nickname}: ${dgram.message}`);
             });
 
             this.udpClient.once('error', reject);
@@ -45,10 +46,21 @@ export class Client {
         this.udpClient?.close();
     }
 
-    public async sendDefault(msg: string): Promise<void> {
-        this.udpClient.send(msg, this.clientData?.port, this.clientData?.host, (err, len) => {
+    public async sendDefault(message: string): Promise<void> {
+
+        const datagram: Datagram = {
+            messageType: MessageType.DEFAULT,
+            nickSize: this.data?.nickname.length ?? 0,
+            nickname: this.data?.nickname ?? 'user',
+            messageSize: message.length,
+            message
+        };
+
+        const dgramBuffer = encode(this.data, datagram);
+
+        this.udpClient.send(dgramBuffer, this.data?.port, this.data?.host, (err, len) => {
             if (err) console.log('ERROR: ', err);
-            console.log('sent lenght ', len);
+            console.log('sent length ', len);
         })
     }
 }
