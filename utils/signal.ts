@@ -7,4 +7,4 @@
     É uma forma do padrão de design OBSERVER. Aqui está limitado, pois o atributo aceita apenas
     uma assinatura por vez.
 */
-export type Signal<Args extends unknown[]> = ((...args: Args[]) => void) | null;
+export type Signal<T extends unknown[], A> = ((...args: T[]) => A) | null;

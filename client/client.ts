@@ -5,7 +5,7 @@ import { Signal } from "../utils/signal";
 
 export class Client {
 
-    messageReceived: Signal<[string, string, string]> = null;
+    messageReceived: Signal<[string, string, string], void> = null;
     data: ClientDatas = null;
     private udpClient: udp.Socket;
 
