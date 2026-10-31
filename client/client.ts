@@ -1,7 +1,8 @@
 import * as udp from "dgram";
 import { ClientDatas, encode, Datagram, MessageType, decode } from "../protocol/protocol";
 import { Signal } from "../utils/signal";
-
+import { isEmoji, isURL } from "../utils/validators";
+import { text } from "stream/consumers";
 
 export class Client {
 
@@ -57,10 +58,44 @@ export class Client {
         };
 
         const dgramBuffer = encode(this.data, datagram);
-
-        this.udpClient.send(dgramBuffer, this.data?.port, this.data?.host, (err, len) => {
-            if (err) console.log('ERROR: ', err);
-            console.log('sent length ', len);
-        })
+        this.udpClient.send(dgramBuffer, this.data?.port, this.data?.host);
     }
+
+    public async sendEmoji(message: string): Promise<void> {
+        if (!isEmoji(message))
+            throw new Error("Mensagem deve ser um emoji.");
+
+        const datagram: Datagram = {
+            messageType: MessageType.EMOJI,
+            nickSize: this.data?.nickname.length ?? 0,
+            nickname: this.data?.nickname ?? 'user',
+            messageSize: message.length,
+            message
+        };
+
+        const dgramBuffer = encode(this.data, datagram);
+        this.udpClient.send(dgramBuffer, this.data?.port, this.data?.host);
+    }
+
+    public async sendURL(url: string): Promise<void> {
+        if (!isURL(url))
+            throw new Error("URL inválida.");
+
+        const datagram: Datagram = {
+            messageType: MessageType.URL,
+            nickSize: this.data?.nickname.length ?? 0,
+            nickname: this.data?.nickname ?? 'user',
+            messageSize: url.length,
+            message: url
+        };
+
+        const dgramBuffer = encode(this.data, datagram);
+        this.udpClient.send(dgramBuffer, this.data?.port, this.data?.host);
+    }
+
+    public async sendEcho(): Promise<void> {
+
+    }
+
+
 }

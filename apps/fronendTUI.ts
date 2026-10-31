@@ -25,25 +25,45 @@ Escolha uma opção: `;
     public async update(): Promise<void> {
         const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
         let running = true;
+        
         while(running) {
-            const msgType = (await rl.question(this.MENU)).trim();
-            switch(msgType) {
-                case "1": {
-                    const message = (await rl.question("> ")).trim();
-                    if (!message)
+            try {
+                const msgType = (await rl.question(this.MENU)).trim();
+                switch(msgType) {
+                    case "1": {
+                        const message = (await rl.question("> ")).trim();
+                        if (!message) break;
+                        await this.client.sendDefault(message);
                         break;
-
-                    await this.client.sendDefault(message);
-                    break;
+                    }
+                    case "2": {
+                        const message = (await rl.question("> ")).trim();
+                        if (!message) break;
+                        await this.client.sendEmoji(message);
+                        break;
+                    }
+                    case "3": {
+                        const message = (await rl.question("> ")).trim();
+                        if (!message) break;
+                        await this.client.sendURL(message);
+                        break;
+                    }
+                    case "4": {
+                        await this.client.sendEcho();
+                        break;
+                    }
+                    case "0": {
+                        console.log("\nTchau!\n");
+                        running = false;
+                        break;
+                    }
+                    default: {
+                        console.log("Opção inválida.");
+                    }
                 }
-                case "0": {
-                    console.log("Tchau!");
-                    running = false;
-                    break;
-                }
-                default: {
-                    console.log("Opção inválida.");
-                }
+            } catch(err) {
+                const errmsg = err instanceof Error ? err.message : String(err);
+                console.log(`\n${errmsg}\n`);
             }
         }
 
@@ -52,6 +72,6 @@ Escolha uma opção: `;
     }
 
     public onReceiveMessage(type: string, receiverName: string, message: string): void {
-        console.log(`\n[${type}] ${receiverName}: ${message}\n`);
+        console.log(`\n\n[${type}] ${receiverName}: ${message}\n`);
     }
 }
