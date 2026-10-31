@@ -49,7 +49,10 @@ Escolha uma opção: `;
                         break;
                     }
                     case "4": {
-                        await this.client.sendEcho();
+                        const message = (await rl.question("> ")).trim();
+                        if (!message) break;
+                        const response = await this.client.sendEcho(message);
+                        console.log(response);
                         break;
                     }
                     case "0": {

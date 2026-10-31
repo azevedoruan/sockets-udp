@@ -2,13 +2,13 @@ import * as udp from "dgram";
 import { ClientDatas, encode, Datagram, MessageType, decode } from "../protocol/protocol";
 import { Signal } from "../utils/signal";
 import { isEmoji, isURL } from "../utils/validators";
-import { text } from "stream/consumers";
 
 export class Client {
 
     messageReceived: Signal<[string, string, string], void> = null;
     data: ClientDatas = null;
     private udpClient: udp.Socket;
+    private pendingEchoResolve: null | ((value: string | PromiseLike<string>) => void) = null;
 
     public constructor() {
         this.udpClient = udp.createSocket('udp4');
@@ -36,6 +36,14 @@ export class Client {
                     return;
 
                 const { clientDatas, dgram } = decoded;
+
+                if (dgram.messageType === MessageType.ECHO) {
+                    const resolve = this.pendingEchoResolve;
+                    this.pendingEchoResolve = null;
+                    resolve?.(dgram.message);
+                    return;
+                }
+
                 this.messageReceived?.([MessageType[dgram.messageType], clientDatas?.nickname ?? "user", dgram.message]);
             });
 
@@ -93,9 +101,24 @@ export class Client {
         this.udpClient.send(dgramBuffer, this.data?.port, this.data?.host);
     }
 
-    public async sendEcho(): Promise<void> {
+    public async sendEcho(message: string): Promise<string> {
+        const datagram: Datagram = {
+            messageType: MessageType.ECHO,
+            nickSize: this.data?.nickname.length ?? 0,
+            nickname: this.data?.nickname ?? 'user',
+            messageSize: message.length,
+            message
+        };
 
+        const dgramBuffer = encode(this.data, datagram);
+        this.udpClient.send(dgramBuffer, this.data?.port, this.data?.host);
+
+        return new Promise<string>((resolve, reject) => {
+            this.udpClient.send(dgramBuffer, this.data?.port, this.data?.host, (err, lenght) => {
+                if (err) reject;
+            });
+
+            this.pendingEchoResolve = resolve;
+        });
     }
-
-
 }
