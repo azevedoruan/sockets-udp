@@ -1,8 +1,11 @@
 import * as udp from "dgram";
 import { ClientDatas, encode, Datagram, MessageType, decode } from "../protocol/protocol";
+import { Signal } from "../utils/signal";
+
 
 export class Client {
 
+    messageReceived: Signal<[string, string, string]> = null;
     data: ClientDatas = null;
     private udpClient: udp.Socket;
 
@@ -32,8 +35,7 @@ export class Client {
                     return;
 
                 const { clientDatas, dgram } = decoded;
-
-                console.log(`[${MessageType[dgram.messageType]}] ${clientDatas?.nickname}: ${dgram.message}`);
+                this.messageReceived?.([MessageType[dgram.messageType], clientDatas?.nickname ?? "user", dgram.message]);
             });
 
             this.udpClient.once('error', reject);

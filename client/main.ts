@@ -1,12 +1,12 @@
 import { Client } from "./client";
-import { FrontendTUI } from "./fronendTUI";
+import { FrontendTUI } from "../apps/fronendTUI";
 
 async function main() {
     const client = new Client();
-    const tui = new FrontendTUI();
+    const tui = new FrontendTUI(client);
     
     await client.startConnection(process.argv[2], '127.0.0.1', Number(process.argv[3]));
-    await tui.update(client);
+    await tui.update();
 }
 
 // Chama a função main e trata erro.

@@ -1,4 +1,4 @@
-import { Client } from "./client";
+import { Client } from "../client/client";
 import * as readline from "readline/promises";
 
 export class FrontendTUI {
@@ -13,11 +13,16 @@ export class FrontendTUI {
 ========================================
 Escolha uma opção: `;
 
-    public constructor() {
+    private client: Client;
 
+    public constructor(client: Client) {
+        this.client = client;
+        this.client.messageReceived = ([type, nickname, message]) => {
+            this.onReceiveMessage(type, nickname, message);
+        }
     }
 
-    public async update(client: Client): Promise<void> {
+    public async update(): Promise<void> {
         const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
         let running = true;
         while(running) {
@@ -28,7 +33,7 @@ Escolha uma opção: `;
                     if (!message)
                         break;
 
-                    await client.sendDefault(message);
+                    await this.client.sendDefault(message);
                     break;
                 }
                 case "0": {
@@ -43,6 +48,10 @@ Escolha uma opção: `;
         }
 
         rl.close();
-        client.close();
+        this.client.close();
+    }
+
+    public onReceiveMessage(type: string, receiverName: string, message: string): void {
+        console.log(`\n[${type}] ${receiverName}: ${message}\n`);
     }
 }
