@@ -44,10 +44,23 @@ export class Client {
 
                 const { clientDatas, dgram } = decoded;
 
+                // Verifica se o ECHO recebido é de origem desse host.
                 if (dgram.messageType === MessageType.ECHO) {
-                    const resolve = this.pendingEchoResolve;
-                    this.pendingEchoResolve = null;
-                    resolve?.(dgram.message);
+                    if (this.pendingEchoResolve
+                        && this.hostConnection == rinfo.address
+                        && this.portConnection == rinfo.port) {
+
+                        const resolve = this.pendingEchoResolve;
+                        this.pendingEchoResolve = null;
+                        resolve(dgram.message);
+                        
+                    } else {
+
+                        // Caso não esteja aguardando nenhum ECHO ou se o ECHO não é do host alvo. Envia de volta.
+                        const responseDgram = encode(clientDatas, dgram);
+                        this.udpClient.send(responseDgram, rinfo.port, rinfo.address);
+                    }
+
                     return;
                 }
 
