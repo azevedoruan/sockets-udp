@@ -1,7 +1,7 @@
 import * as udp from "dgram";
 import { ClientDatas, encode, Datagram, MessageType, decode } from "../protocol/protocol";
 import { Signal } from "../utils/signal";
-import { isEmoji, isURL } from "../utils/validators";
+import { isURL } from "../utils/validators";
 
 export class Client {
 
@@ -78,9 +78,6 @@ export class Client {
     }
 
     public async sendEmoji(message: string): Promise<void> {
-        if (!isEmoji(message))
-            throw new Error("Mensagem deve ser um emoji.");
-
         const datagram: Datagram = {
             messageType: MessageType.EMOJI,
             nickSize: this.nickname.length,

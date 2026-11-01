@@ -1,6 +1,7 @@
 import { Client } from "../client/client";
 import * as readline from "readline/promises";
 import { withTimeout } from "../utils/timeout";
+import { emojiReader } from "../emojis/emojireader";
 
 export class FrontendTUI {
 
@@ -18,8 +19,8 @@ Escolha uma opção: `;
 
     public constructor(client: Client) {
         this.client = client;
-        this.client.messageReceived = ([type, nickname, message]) => {
-            this.onReceiveMessage(type, nickname, message);
+        this.client.messageReceived = async ([type, nickname, message]) => {
+            await this.onReceiveMessage(type, nickname, message);
         }
     }
 
@@ -75,7 +76,13 @@ Escolha uma opção: `;
         this.client.close();
     }
 
-    public onReceiveMessage(type: string, receiverName: string, message: string): void {
-        console.log(`\n\n[${type}] ${receiverName}: ${message}\n`);
+    public async onReceiveMessage(type: string, receiverName: string, message: string): Promise<void> {
+        let msg = message;
+
+        if (type === "EMOJI") {
+            msg = await emojiReader(Number(message));
+        }
+
+        console.log(`\n\n[${type}] ${receiverName}: ${msg}\n`);
     }
 }
