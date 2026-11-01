@@ -1,5 +1,6 @@
 import { Client } from "../client/client";
 import * as readline from "readline/promises";
+import { withTimeout } from "../utils/timeout";
 
 export class FrontendTUI {
 
@@ -51,7 +52,7 @@ Escolha uma opção: `;
                     case "4": {
                         const message = (await rl.question("> ")).trim();
                         if (!message) break;
-                        const response = await this.client.sendEcho(message);
+                        const response = await withTimeout(this.client.sendEcho(message), 5000, new Error("Host não responde ao Echo."));
                         console.log(response);
                         break;
                     }

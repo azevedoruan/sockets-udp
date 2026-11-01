@@ -2,10 +2,10 @@ import { Client } from "./client";
 import { FrontendTUI } from "../apps/fronendTUI";
 
 async function main() {
-    const client = new Client();
+    const client = new Client(process.argv[2], '127.0.0.1', Number(process.argv[3]));
     const tui = new FrontendTUI(client);
     
-    await client.startConnection(process.argv[2], '127.0.0.1', Number(process.argv[3]));
+    await client.startConnection('127.0.0.1', Number(process.argv[4]));
     await tui.update();
 }
 
