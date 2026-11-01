@@ -44,25 +44,8 @@ export class Client {
 
                 const { clientDatas, dgram } = decoded;
 
-                // Verifica se o ECHO recebido é de origem desse host.
-                if (dgram.messageType === MessageType.ECHO) {
-                    if (this.pendingEchoResolve
-                        && this.hostConnection == rinfo.address
-                        && this.portConnection == rinfo.port) {
-
-                        const resolve = this.pendingEchoResolve;
-                        this.pendingEchoResolve = null;
-                        resolve(dgram.message);
-                        
-                    } else {
-
-                        // Caso não esteja aguardando nenhum ECHO ou se o ECHO não é do host alvo. Envia de volta.
-                        const responseDgram = encode(clientDatas, dgram);
-                        this.udpClient.send(responseDgram, rinfo.port, rinfo.address);
-                    }
-
+                if (this.isEcho(clientDatas, dgram, rinfo))
                     return;
-                }
 
                 this.messageReceived?.([MessageType[dgram.messageType], clientDatas?.nickname ?? "user", dgram.message]);
             });
@@ -158,5 +141,28 @@ export class Client {
 
             this.pendingEchoResolve = resolve;
         });
+    }
+
+    private isEcho(clientDatas: ClientDatas, dgram: Datagram, rinfo: udp.RemoteInfo): boolean {
+        if (dgram.messageType !== MessageType.ECHO)
+            return false;
+
+        // Verifica se o ECHO recebido é de origem desse host.
+        if (this.pendingEchoResolve
+            && this.hostConnection == rinfo.address
+            && this.portConnection == rinfo.port) {
+
+            const resolve = this.pendingEchoResolve;
+            this.pendingEchoResolve = null;
+            resolve(dgram.message);
+
+        } else {
+
+            // Caso não esteja aguardando nenhum ECHO ou se o ECHO não é do host alvo. Envia de volta.
+            const responseDgram = encode(clientDatas, dgram);
+            this.udpClient.send(responseDgram, rinfo.port, rinfo.address);
+        }
+
+        return true;
     }
 }
