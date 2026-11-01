@@ -14,3 +14,8 @@ main().catch((err) => {
     console.error("Error:", err instanceof Error ? err.message : String(err));
     process.exit(1);
 });
+
+
+/* TODO
+- Aplicação de terminal mais agradavel. Possivel conversar com vários Hosts em diferentes chats.
+*/
